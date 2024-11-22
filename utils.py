@@ -52,11 +52,7 @@ def get_list_user_id_of_group(client, group_username):
 	Get list user_id of group by group username
 	"""
 	all_data = get_member_by_group_username(client, group_username)
-	all_data_id = [] # list user_id
-	for item in all_data:
-		all_data_id.append(item.id)
-
-	return all_data_id
+	return [item.id for item in all_data]
 	
 
 def get_member_by_group_id(client, group_id):
@@ -150,14 +146,13 @@ def read_data_member(path_data):
 	:return: list member with user_id, access_hash each phone
 
 	"""
-	result = []
 	dict_member = {}
 	list_file = os.listdir(path_data)
 
 	for file_name in list_file:
 		phone = file_name.split('.')[0]
 		temp_data_file = []
-		with open(path_data + '/' + file_name, encoding='utf-8') as f:
+		with open(f'{path_data}/{file_name}', encoding='utf-8') as f:
 			temp_data_file = json.loads(f.read())
 
 		for item in temp_data_file:
@@ -172,7 +167,4 @@ def read_data_member(path_data):
 				'access_hash': item['access_hash']
 			} 
 
-	for key_map in dict_member:
-		result.append(dict_member[key_map])
-	
-	return result
+	return list(dict_member.values())

@@ -18,9 +18,9 @@ with open('config.json', 'r', encoding='utf-8') as f:
 	config = json.loads(f.read())
 
 root_path = os.path.dirname(os.path.abspath(__file__))
-folder_session = root_path + '/session/'
-folder_data = root_path + '/data/'
-folder_data_log = root_path + '/data-log/'
+folder_session = f'{root_path}/session/'
+folder_data = f'{root_path}/data/'
+folder_data_log = f'{root_path}/data-log/'
 
 accounts = config['accounts']
 
@@ -39,7 +39,7 @@ time_big_sleep = 7200
 clients = []
 
 # data user need add to group
-path_folder_file = folder_data + '/' + str(group_source)
+path_folder_file = f'{folder_data}/{str(group_source)}'
 users = read_data_member(path_folder_file)
 
 # date_online_from
@@ -52,12 +52,12 @@ count_added = 0 # count added success (in 1 big round)
 total_count_added = 0 # total count added success
 
 # file save log processed
-path_file_log = folder_data_log + '/' + str(group_target) + '.txt'
+path_file_log = f'{folder_data_log}/{str(group_target)}.txt'
 list_id_processed = read_log_processed(path_file_log)
 
 assert len(accounts) > 0
 
-# init TelegramClient 
+# init TelegramClient
 for phone in accounts:
 	client = TelegramClient(folder_session + phone, api_id, api_hash)
 
@@ -73,12 +73,12 @@ for phone in accounts:
 			'group_target': entity_group
 		})
 	else:
-		logging.info(phone + ' login fail')
+		logging.info(f'{phone} login fail')
 
 total_user = len(users)
 total_client = len(clients)
-logging.info('total member need to add : ' + str(total_user))
-logging.info('total account run: ' + str(total_client))
+logging.info(f'total member need to add : {total_user}')
+logging.info(f'total account run: {total_client}')
 
 # use first client to get list user_id of target group
 list_user_id_in_target = get_list_user_id_of_group(clients[0]['client'], group_target)
@@ -97,7 +97,7 @@ while i < total_user:
 			time.sleep(2)
 		count_added = 0 # reset
 
-	logging.info('current index user: ' + str(i))
+	logging.info(f'current index user: {i}')
 	user = users[i]
 	# not add user overdue (not online far away)
 	if user['date_online'] != 'online' and user['date_online'] < from_date_active:
@@ -115,7 +115,7 @@ while i < total_user:
 		i += 1
 		logging.info('User ' + str(user['user_id']) + ' is processed previous')
 		continue
-	
+
 	current_index = count_added % total_client
 	current_client = clients[count_added % total_client]
 
@@ -133,15 +133,15 @@ while i < total_user:
 	list_id_processed.append(str(user['user_id']))
 	write_log_processed(path_file_log, list_id_processed)
 
-	logging.info("status_add: " + status_add)
+	logging.info(f"status_add: {status_add}")
 	if status_add == 'SUCCESS':
-		logging.info('Added member ' + str(user['user_id']) + ' successfully ;-)')	
-		logging.info('sleep: ' + str(total_time_in_round / total_client))
+		logging.info('Added member ' + str(user['user_id']) + ' successfully ;-)')
+		logging.info(f'sleep: {str(total_time_in_round / total_client)}')
 		time.sleep(total_time_in_round / total_client)
 		count_added += 1
 		total_count_added += 1
 
-	if status_add == 'FLOOD' or status_add == 'FLOOD_WAIT':
+	if status_add in ['FLOOD', 'FLOOD_WAIT']:
 		logging.info('FLOOD, remove client: ' + current_client['phone'])
 		current_client['client'].disconnect()
 		clients.remove(current_client)
@@ -150,15 +150,15 @@ while i < total_user:
 		total_client = len(clients)
 
 	if status_add == 'USER_PRIVACY':
-		logging.info(status_add + ', skip user')
+		logging.info(f'{status_add}, skip user')
 
 	if status_add == 'ERROR_OTHER':
-		logging.info(status_add + ', skip user')
+		logging.info(f'{status_add}, skip user')
 		time.sleep(total_time_in_round / total_client)
 
 
 	# if status_add is not FLOOD and FLOOD_WAIT
-	if status_add != 'FLOOD' and status_add != 'FLOOD_WAIT':
+	if status_add not in ['FLOOD', 'FLOOD_WAIT']:
 		i += 1
 
 	# check client empty
@@ -171,5 +171,5 @@ for cli in clients:
 	time.sleep(2)
 end_time = datetime.now()
 
-logging.info("added: " + str(total_count_added))
-logging.info("total time: " + str(end_time - start_time))
+logging.info(f"added: {str(total_count_added)}")
+logging.info(f"total time: {str(end_time - start_time)}")

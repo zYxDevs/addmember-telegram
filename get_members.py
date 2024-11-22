@@ -14,8 +14,8 @@ with open('config.json', 'r', encoding='utf-8') as f:
 	config = json.loads(f.read())
 
 root_path = os.path.dirname(os.path.abspath(__file__))
-folder_session = root_path + '/session/'
-folder_data = root_path + '/data/'
+folder_session = f'{root_path}/session/'
+folder_data = f'{root_path}/data/'
 
 accounts = config['accounts']
 group_source = config['group_source']
@@ -27,8 +27,8 @@ for phone in accounts:
 	client = TelegramClient(folder_session + phone, api_id, api_hash)
 	client.connect()
 	if not client.is_user_authorized():
-		logging.error('Login fail, check account ('+phone+'), need to run init_session')
-		
+		logging.error(f'Login fail, check account ({phone}), need to run init_session')
+
 	else:
 		path_group = folder_data + str(group_source) + '/'
 		try: 
@@ -53,8 +53,6 @@ for phone in accounts:
 				if not isinstance(user.username, type(None)):
 					if str(user.username[-3:]).lower() == "bot":
 						continue
-					else:
-						pass
 				if isinstance(user.status, UserStatusRecently):
 					date_online_str = 'online'
 				else:
